@@ -1,291 +1,289 @@
-# GLMS - Global Lecturer Management System
+# GLMS — Global Logistics Management System
 
-## 📋 Application Description
+[![.NET Build and Test](https://github.com/msa1105/PROG7311-POE/actions/workflows/dotnet.yml/badge.svg)](https://github.com/msa1105/PROG7311-POE/actions/workflows/dotnet.yml)
 
-The **Global Lecturer Management System (GLMS)** is a comprehensive ASP.NET Core MVC web application designed to manage lecturer contracts, client relationships, and service requests for educational institutions operating globally. The system provides robust contract lifecycle management, currency conversion for international payments (USD to ZAR), secure document handling, and comprehensive workflow validation.
-
-### Key Features
-
-- **Client Management**: Maintain detailed records of educational clients across different regions
-- **Contract Lifecycle Management**: Create, track, and manage contracts with multiple status states (Draft, Active, Expired, OnHold)
-- **Service Request Processing**: Handle service requests tied to active contracts with automatic currency conversion
-- **Real-time Currency Conversion**: Integrated with OpenExchangeRates API for live USD to ZAR conversion
-- **Secure File Handling**: UUID-based file naming for contract agreements with strict PDF validation
-- **Advanced Filtering & Search**: Filter contracts by client, status, and date ranges (yy/MM/dd format)
-- **Business Rule Enforcement**: Automated validation preventing service requests on expired or on-hold contracts
-- **Design Pattern Implementation**: 
-  - Factory Method for contract creation
-  - Observer pattern for status change notifications
-  - Strategy pattern for currency conversion
-- **Comprehensive Unit Testing**: xUnit test suite with Moq for dependency mocking
-- **CI/CD Pipeline**: GitHub Actions workflow for automated build and test execution
+GLMS is an ASP.NET Core MVC web application for managing client contracts, service requests, and logistics workflows. It includes live USD-to-ZAR currency conversion, PDF contract file handling, strict business rule enforcement, and a full xUnit test suite with automated CI via GitHub Actions.
 
 ---
 
-## 🖥️ System Requirements
+## Table of Contents
 
-### Development Environment
-- **Operating System**: Windows 10/11, macOS, or Linux
-- **IDE**: Visual Studio 2022 (v17.8+) or Visual Studio Code with C# extension
-- **.NET SDK**: .NET 9.0 or higher
-- **Database**: SQL Server 2019+ or SQL Server LocalDB
-- **Node.js** (optional, for front-end tooling): 18.x or higher
+1. [Key Features](#key-features)
+2. [System Requirements](#system-requirements)
+3. [Setup and Installation](#setup-and-installation)
+4. [Running the Application](#running-the-application)
+5. [Running the Tests](#running-the-tests)
+6. [Project Structure](#project-structure)
+7. [Design Patterns](#design-patterns)
+8. [Database Schema](#database-schema)
+9. [API Integration](#api-integration)
+10. [Screenshots](#screenshots)
+11. [Known Limitations](#known-limitations)
 
-### Runtime Requirements
+---
+
+## Key Features
+
+| Feature | Description |
+|---|---|
+| Client Management | Create and maintain client records across regions |
+| Contract Lifecycle | Full CRUD with status states: Draft, Active, OnHold, Expired |
+| Service Requests | Requests linked to contracts; blocked on Expired/OnHold contracts |
+| Currency Conversion | Live USD to ZAR via OpenExchangeRates API with decimal precision |
+| PDF File Upload | UUID-named uploads with extension and MIME type validation |
+| Contract Filtering | Filter by client name, status, and date ranges (yy/MM/dd) |
+| Business Rules | Duplicate name detection, date ordering, file size cap (10 MB) |
+| Design Patterns | Factory Method, Observer, and Strategy patterns fully implemented |
+| Unit Testing | 41 xUnit tests with Moq mocking; 0 failures |
+| CI/CD | GitHub Actions — builds and runs all tests on every push |
+
+---
+
+## System Requirements
+
+**Development**
+
+| Requirement | Version |
+|---|---|
+| Operating System | Windows 10/11, macOS, or Linux |
+| IDE | Visual Studio 2022 v17.8+ or VS Code with C# Dev Kit |
+| .NET SDK | 9.0 or higher |
+| Database | SQL Server 2019+ or SQL Server LocalDB (Windows) |
+
+**Runtime**
+
 - .NET 9.0 Runtime
-- SQL Server connection (LocalDB for development)
-- Internet connection (for OpenExchangeRates API)
+- SQL Server or SQL Server LocalDB
+- Internet access for OpenExchangeRates API calls
 
 ---
 
-## 🚀 Setup and Run Instructions
+## Setup and Installation
 
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/msa1105/PROG7311-POE.git
 cd PROG7311-POE
 ```
 
-### 2. Configure Database Connection
+### 2. Configure the database connection
 
-The application uses SQL Server LocalDB by default. The connection string is located in `appsettings.json`:
+Open `appsettings.json` and verify the connection string. The default targets SQL Server LocalDB:
 
 ```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GLMS_DB;Trusted_Connection=True;MultipleActiveResultSets=true"
+"ConnectionStrings": {
+  "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GLMS_DB;Trusted_Connection=True;MultipleActiveResultSets=true"
+}
+```
+
+Replace the value with your own SQL Server connection string if not using LocalDB.
+
+### 3. Configure the OpenExchangeRates API key
+
+In `appsettings.json`, replace the placeholder with your API key (free at [openexchangerates.org](https://openexchangerates.org)):
+
+```json
+"ExternalServices": {
+  "OpenExchangeRates": {
+    "BaseUrl": "https://openexchangerates.org/api/",
+    "AppId": "YOUR_API_KEY_HERE"
   }
 }
 ```
 
-**For custom SQL Server instances**, update the connection string accordingly.
-
-### 3. Configure OpenExchangeRates API Key
-
-Update `appsettings.json` with your API key:
-
-```json
-{
-  "ExternalServices": {
-    "OpenExchangeRates": {
-      "BaseUrl": "https://openexchangerates.org/api/",
-      "AppId": "YOUR_API_KEY_HERE"
-    }
-  }
-}
-```
-
-Get a free API key at: [https://openexchangerates.org/](https://openexchangerates.org/)
-
-### 4. Restore NuGet Packages
+### 4. Restore NuGet packages
 
 ```bash
-dotnet restore
+dotnet restore PROG7311-POE.csproj
+dotnet restore GLMS.Tests/GLMS.Tests.csproj
 ```
 
-### 5. Apply Database Migrations
-
-Run the following command from the project root directory:
+### 5. Apply database migrations
 
 ```bash
 dotnet ef database update
 ```
 
-**Alternative (using Package Manager Console in Visual Studio):**
+Or in the Visual Studio Package Manager Console:
 
 ```powershell
 Update-Database
 ```
 
-This will create the database schema and apply all migrations.
+### 6. Seed data
 
-### 6. Seed Initial Data
+The database is automatically seeded with mock records (5 clients, 5 contracts, 10 service requests) on first run. No manual step is required.
 
-The application automatically seeds the database with **10+ mock records** (clients, contracts, and service requests) on first run. Simply start the application and the seeder will execute automatically.
+---
 
-### 7. Run the Application
+## Running the Application
 
-#### Using Visual Studio:
-1. Open `PROG7311-POE.sln`
-2. Press `F5` or click the **Start** button
+**Visual Studio**
 
-#### Using CLI:
+1. Open `PROG7311-POE.slnx`
+2. Press `F5` or click **Start**
+
+**Command line**
+
 ```bash
 dotnet run --project PROG7311-POE.csproj
 ```
 
-The application will launch at `https://localhost:5001` (or the port configured in `launchSettings.json`).
+The application starts at the URL shown in the terminal (typically `https://localhost:7xxx`).
 
-### 8. Run Unit Tests
+---
 
-Execute the xUnit test suite:
+## Running the Tests
 
 ```bash
-dotnet test GLMS.Tests/GLMS.Tests.csproj
+dotnet test GLMS.Tests/GLMS.Tests.csproj --verbosity normal
 ```
 
-**[INSERT SCREENSHOT HERE: Unit Test Results showing all tests passing]**
+Expected output: **41 tests, 41 passed, 0 failed**.
+
+The test suite covers:
+
+| Test Class | Tests | What is covered |
+|---|---|---|
+| `CurrencyCalculationTests` | 5 | USD-to-ZAR decimal math and zero-amount edge case |
+| `FileValidationTests` | 7 | PDF acceptance, `.exe` / non-PDF rejection, null file guard |
+| `ContractWorkflowTests` | 5 | Expired/OnHold block, Active/Draft allow, null contract guard |
+| `ContractFactoryTests` | 10 | Factory creation, validation pass/fail, registry logic |
+| `ContractObserverTests` | 5 | Attach/detach/notify, compliance triggers, multi-status tracking |
+| `CurrencyStrategyTests` | 9 | Strategy rounding, HTTP error handling, runtime strategy swap |
+
+CI runs automatically on every push and pull request via GitHub Actions.
 
 ---
 
-## 📸 Application Screenshots
-
-### Home Dashboard
-**[INSERT SCREENSHOT HERE: Main landing page]**
-
-### Client Management
-**[INSERT SCREENSHOT HERE: Client list view with search/filter options]**
-
-### Contract Management
-**[INSERT SCREENSHOT HERE: Contract list with status indicators and filters]**
-
-### Contract Creation Form
-**[INSERT SCREENSHOT HERE: Contract form with file upload and date pickers]**
-
-### Service Request Management
-**[INSERT SCREENSHOT HERE: Service request list with USD/ZAR conversion]**
-
-### Service Request Creation
-**[INSERT SCREENSHOT HERE: Service request form showing currency conversion]**
-
----
-
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 PROG7311-POE/
-├── Controllers/           # MVC Controllers (Clients, Contracts, ServiceRequests)
-├── Data/                  # EF Core DbContext and Database Seeder
-├── Models/                # Domain models and ViewModels
+├── Controllers/                  # Clients, Contracts, ServiceRequests, Home
+├── Data/
+│   ├── ApplicationDbContext.cs   # EF Core DbContext with Fluent API config
+│   └── DbSeeder.cs               # Startup data seeder (10+ records)
+├── Models/
 │   ├── Client.cs
 │   ├── Contract.cs
 │   ├── ServiceRequest.cs
-│   └── ViewModels/
-├── Services/              # Business logic services (Currency, FileValidation, Workflow)
-├── Views/                 # Razor views
-├── wwwroot/              # Static files and uploaded documents
-│   └── uploads/contracts/ # UUID-named PDF contract files
-├── GLMS.Tests/           # xUnit test project
-├── appsettings.json      # Configuration file
-├── Program.cs            # Application entry point
-└── Database_Schema.sql   # Generated migration script
+│   ├── ContractStatus.cs         # Enum: Draft, Active, OnHold, Expired
+│   └── ViewModels/               # ContractFormViewModel, ServiceRequestFormViewModel
+├── Patterns/
+│   ├── Factory/                  # IContract, DomesticContract, InternationalContract, ContractFactory
+│   ├── Observer/                 # IObserver, ContractSubject, LogisticsManagerObserver, ComplianceObserver
+│   └── Strategy/                 # ICurrencyStrategy, OpenExchangeStrategy, CurrencyLayerStrategy, FinancialIntegrationModule
+├── Services/
+│   ├── CurrencyService.cs        # OpenExchangeRates HTTP client
+│   ├── FileValidationService.cs  # Extension + MIME type validation
+│   └── ContractWorkflowService.cs# Business rule enforcement
+├── Views/                        # Razor views for all three entities
+├── wwwroot/
+│   └── uploads/contracts/        # UUID-named PDF contract files
+├── GLMS.Tests/                   # xUnit + Moq test project (41 tests)
+├── .github/workflows/dotnet.yml  # GitHub Actions CI pipeline
+├── appsettings.json              # Connection string and API key configuration
+├── Program.cs                    # Application entry point and DI registration
+└── Database_Schema.sql           # Full SQL migration script
 ```
 
 ---
 
-## 🧪 Testing Strategy
+## Design Patterns
 
-The application includes comprehensive unit tests covering:
+### Factory Method — `Patterns/Factory/`
 
-1. **Currency Calculation Tests** - Validates USD to ZAR conversion logic with various amounts including edge case (zero)
-2. **File Validation Tests** - Ensures only PDF files are accepted and dangerous file types (.exe) are blocked
-3. **Contract Workflow Tests** - Verifies business rules preventing service requests on expired/on-hold contracts
+Produces `DomesticContract` or `InternationalContract` instances from a single `GlmsContractFactory.CreateContract(type)` call. Validation runs before any contract is registered.
 
-**Test Framework**: xUnit  
-**Mocking Framework**: Moq  
-**Code Coverage**: Target 80%+
+### Observer — `Patterns/Observer/`
 
-**[INSERT SCREENSHOT HERE: Test Explorer showing all 10+ tests passing]**
+`ContractSubject` maintains a list of `IObserver` subscribers. When `SetStatus()` is called, all attached observers are notified. `LogisticsManagerObserver` logs alerts; `ComplianceObserver` records violations on Expired or OnHold transitions.
 
----
+### Strategy — `Patterns/Strategy/`
 
-## 🔐 Security Features
-
-- **File Upload Security**: UUID-based naming prevents file overwriting; strict extension and MIME type validation
-- **SQL Injection Protection**: Entity Framework Core parameterized queries
-- **CSRF Protection**: Anti-forgery tokens on all POST requests
-- **Input Validation**: Server-side and client-side validation using Data Annotations
+`FinancialIntegrationModule` holds an `ICurrencyStrategy` reference. The active strategy (`OpenExchangeStrategy` or `CurrencyLayerStrategy`) can be swapped at runtime via `SetStrategy()`. Both implementations use `decimal` arithmetic to prevent floating-point errors.
 
 ---
 
-## 🛠️ Design Patterns Implemented
+## Database Schema
 
-### 1. Factory Method Pattern
-Used for contract creation with different status types (Draft, Active, etc.)
+The application uses EF Core Code-First migrations. The three core entities are:
 
-### 2. Observer Pattern
-Implements status change notifications for contract lifecycle events
+| Table | Key columns |
+|---|---|
+| `Clients` | `Id`, `Name`, `ContactDetails`, `Region` |
+| `Contracts` | `Id`, `ClientId` (FK), `StartDate`, `EndDate`, `Status`, `ServiceLevel`, `AgreementFilePath` |
+| `ServiceRequests` | `Id`, `ContractId` (FK), `Description`, `Cost` (USD), `LocalCost` (ZAR), `Status` |
 
-### 3. Strategy Pattern
-Encapsulates currency conversion logic, allowing for multiple API providers
+**Relationships**
 
----
+- `Contracts.ClientId` → `Clients.Id` — restricted delete (cannot delete a client with active contracts)
+- `ServiceRequests.ContractId` → `Contracts.Id` — cascade delete
 
-## [DATABASE] Database Schema
-
-The application uses Entity Framework Core Code-First approach with the following entities:
-
-- **Clients**: Educational institutions with regional information
-- **Contracts**: Agreements between clients and the system with lifecycle management
-- **ServiceRequests**: Individual service requests tied to contracts with cost tracking
-
-**Foreign Key Relationships**:
-- `Contracts.ClientId` → `Clients.Id` (Restrict delete)
-- `ServiceRequests.ContractId` → `Contracts.Id` (Cascade delete)
-
-See `Database_Schema.sql` for the complete SQL migration script.
+See [`Database_Schema.sql`](Database_Schema.sql) for the full generated SQL script.
 
 ---
 
-## 🌐 API Integration
+## API Integration
 
-### OpenExchangeRates API
-- **Endpoint**: `https://openexchangerates.org/api/latest.json`
-- **Purpose**: Real-time USD to ZAR currency conversion
-- **Error Handling**: Graceful fallback with user-friendly error messages
-- **Retry Logic**: SQL Server transient error handling with exponential backoff (max 5 retries)
+**OpenExchangeRates**
 
----
-
-## 📝 Code Attribution
-
-Complex logic and pattern implementations were assisted by:
-
-```
-OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
-Available at: https://chat.openai.com/
-[Accessed: 15 January 2025]
-```
+- Endpoint: `GET https://openexchangerates.org/api/latest.json?app_id={key}&symbols=ZAR`
+- Used in: `CurrencyService.ConvertUsdToZarAsync()` and `OpenExchangeStrategy.Convert()`
+- Error handling: `HttpRequestException` throws a user-friendly `InvalidOperationException`; controllers catch it and add a `ModelState` error without crashing
+- Precision: all rates stored and computed as `decimal`
 
 ---
 
-## 🐛 Known Issues & Limitations
+## Screenshots
 
-- OpenExchangeRates free tier has rate limits (1000 requests/month)
-- File uploads limited to 10MB (configurable in `appsettings.json`)
-- LocalDB requires Windows operating system (use full SQL Server on Linux/Mac)
+> Screenshots are stored in [`docs/screenshots/`](docs/screenshots/).
+> Add images to that folder and update the paths below.
+
+### Home Page
+
+![Home page](docs/screenshots/home.png)
+
+### Client List
+
+![Client list](docs/screenshots/clients-index.png)
+
+### Contract List with Filters
+
+![Contract list](docs/screenshots/contracts-index.png)
+
+### Contract Create Form
+
+![Contract create](docs/screenshots/contracts-create.png)
+
+### Service Request List
+
+![Service requests](docs/screenshots/service-requests-index.png)
+
+### Service Request Create — Currency Conversion
+
+![Service request create](docs/screenshots/service-requests-create.png)
+
+### Unit Test Results — All 41 Passing
+
+![Unit tests](docs/screenshots/tests-passing.png)
+
+### GitHub Actions CI — Build and Test
+
+![GitHub Actions](docs/screenshots/github-actions.png)
 
 ---
 
-## 🚧 Future Enhancements
+## Known Limitations
 
-- [ ] Implement role-based authentication (Admin, Lecturer, Viewer)
-- [ ] Add email notifications for contract expiration
-- [ ] Export contracts and service requests to Excel/PDF reports
-- [ ] Implement contract renewal workflow
-- [ ] Add dashboard with analytics and charts
-- [ ] Support for multiple currencies beyond USD/ZAR
+- The OpenExchangeRates free tier allows 1 000 API requests per month. If the quota is exceeded, currency conversion will show an error message and the form will not submit.
+- File uploads are capped at 10 MB. This limit is enforced in both the ViewModel and the controller.
+- SQL Server LocalDB is Windows-only. On macOS or Linux, configure a full SQL Server instance or use the SQL Server Docker image.
 
 ---
 
-## 📞 Support & Contact
+## Repository
 
-- **GitHub Issues**: [https://github.com/msa1105/PROG7311-POE/issues](https://github.com/msa1105/PROG7311-POE/issues)
-- **Repository**: [https://github.com/msa1105/PROG7311-POE](https://github.com/msa1105/PROG7311-POE)
-
----
-
-## 📄 License
-
-This project is submitted as part of PROG7311 coursework. All rights reserved.
-
----
-
-## 🎓 Academic Integrity Statement
-
-This application was developed as part of the PROG7311 module assessment. All code is original or properly attributed. External libraries and frameworks are used in accordance with their respective licenses.
-
-**Lecturer**: [Lecturer Name]  
-**Institution**: [Institution Name]  
-**Submission Date**: [Date]
+[https://github.com/msa1105/PROG7311-POE](https://github.com/msa1105/PROG7311-POE)
