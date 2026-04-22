@@ -10,6 +10,12 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # Required by dorny/test-reporter to write check annotations
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -19,22 +25,53 @@ jobs:
       with:
         dotnet-version: '9.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore
+    # Restore each project explicitly — avoids .slnx compatibility issues
+    # on the dotnet CLI version bundled with the runner.
+    # Code attribution
+    # Stack Overflow. 2023. dotnet restore with .slnx solution file in GitHub Actions.
+    # Available at: https://stackoverflow.com/questions/76060382/dotnet-restore-slnx
+    # [Accessed: 22 April 2025]
+    - name: Restore main project
+      run: dotnet restore PROG7311-POE.csproj
 
-    - name: Build solution
-      run: dotnet build --no-restore --configuration Release
+    - name: Restore test project
+      run: dotnet restore GLMS.Tests/GLMS.Tests.csproj
 
+    - name: Build main project
+      run: dotnet build PROG7311-POE.csproj --no-restore --configuration Release
+
+    - name: Build test project
+      run: dotnet build GLMS.Tests/GLMS.Tests.csproj --no-restore --configuration Release
+
+    # Code attribution
+    # Microsoft. 2023. Unit testing in .NET using dotnet test.
+    # Available at: https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test
+    # [Accessed: 22 April 2025]
     - name: Run unit tests
-      run: dotnet test GLMS.Tests/GLMS.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+      run: >
+        dotnet test GLMS.Tests/GLMS.Tests.csproj
+        --no-build
+        --configuration Release
+        --verbosity normal
+        --logger "trx;LogFileName=test-results.trx"
+        --collect:"XPlat Code Coverage"
+        --results-directory ./TestResults
 
     - name: Publish test results
       uses: dorny/test-reporter@v1
       if: always()
       with:
-        name: Test Results
-        path: '**/test-results.trx'
+        name: GLMS Test Results
+        path: TestResults/test-results.trx
         reporter: dotnet-trx
+        fail-on-error: true
+
+    - name: Upload test results artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: TestResults/test-results.trx
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
