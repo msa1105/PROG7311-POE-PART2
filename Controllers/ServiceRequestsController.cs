@@ -250,6 +250,11 @@ public class ServiceRequestsController : Controller
     // Microsoft. 2023. SelectList and DropDownList in ASP.NET Core MVC.
     // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/views/working-with-forms#the-select-tag-helper
     // [Accessed: 15 January 2025]
+    //
+    // Code attribution
+    // Stack Overflow. 2011. Populate a SelectList in ASP.NET MVC from a LINQ query.
+    // Available at: https://stackoverflow.com/questions/5555730/asp-net-mvc-select-list-from-linq
+    // [Accessed: 15 January 2025]
     private void PopulateContractDropdown(int? selectedId = null)
     {
         var contracts = _context.Contracts

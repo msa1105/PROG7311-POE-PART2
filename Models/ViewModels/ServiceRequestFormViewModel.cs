@@ -6,6 +6,11 @@ namespace PROG7311_POE.Models.ViewModels;
 // Microsoft. 2023. Model Validation in ASP.NET Core.
 // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/validation
 // [Accessed: 15 January 2025]
+//
+// Code attribution
+// Stack Overflow. 2012. Data annotation [Range] for decimal values.
+// Available at: https://stackoverflow.com/questions/8240048/data-annotation-range-for-decimal
+// [Accessed: 15 January 2025]
 public class ServiceRequestFormViewModel
 {
     public int Id { get; set; }

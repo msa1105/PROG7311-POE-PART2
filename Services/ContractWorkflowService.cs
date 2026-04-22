@@ -5,8 +5,13 @@ namespace PROG7311_POE.Services;
 public class ContractWorkflowService : IContractWorkflowService
 {
     //Code attribution
-    //OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
-    //Available at: https://chat.openai.com/
+    //Microsoft. 2023. Model Validation in ASP.NET Core.
+    //Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/validation
+    //[Accessed: 15 January 2025]
+    //
+    //Code attribution
+    //Geeks for Geeks. 2023. Software Design Patterns - Business Rules.
+    //Available at: https://www.geeksforgeeks.org/software-engineering-design-patterns/
     //[Accessed: 15 January 2025]
     public void ValidateServiceRequestCreation(Contract contract)
     {

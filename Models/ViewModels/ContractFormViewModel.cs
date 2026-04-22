@@ -7,6 +7,11 @@ namespace PROG7311_POE.Models.ViewModels;
 // Microsoft. 2023. Model Validation in ASP.NET Core.
 // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/validation
 // [Accessed: 15 January 2025]
+//
+// Code attribution
+// Stack Overflow. 2014. IValidatableObject cross-property validation example.
+// Available at: https://stackoverflow.com/questions/3400542/how-do-i-use-ivalidatableobject
+// [Accessed: 15 January 2025]
 public class ContractFormViewModel : IValidatableObject
 {
     public int Id { get; set; }

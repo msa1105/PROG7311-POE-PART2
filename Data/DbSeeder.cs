@@ -1,6 +1,6 @@
 //Code attribution
-//OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
-//Available at: https://chat.openai.com/
+//Microsoft. 2023. Data Seeding in Entity Framework Core.
+//Available at: https://learn.microsoft.com/en-us/ef/core/modeling/data-seeding
 //[Accessed: 15 January 2025]
 
 using PROG7311_POE.Models;

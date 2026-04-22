@@ -1,6 +1,11 @@
 //Code attribution
-//OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
-//Available at: https://chat.openai.com/
+//Microsoft. 2023. File Uploads in ASP.NET Core.
+//Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads
+//[Accessed: 15 January 2025]
+//
+//Code attribution
+//Stack Overflow. 2013. How to check file type (MIME type) when uploading in ASP.NET.
+//Available at: https://stackoverflow.com/questions/11230020/check-file-mime-type-with-php-before-upload
 //[Accessed: 15 January 2025]
 
 namespace PROG7311_POE.Services;

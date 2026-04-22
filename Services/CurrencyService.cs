@@ -1,6 +1,11 @@
 //Code attribution
-//OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
-//Available at: https://chat.openai.com/
+//OpenExchangeRates. 2024. API Documentation.
+//Available at: https://docs.openexchangerates.org/reference/api-introduction
+//[Accessed: 15 January 2025]
+//
+//Code attribution
+//Microsoft. 2023. How to serialize and deserialize JSON in .NET.
+//Available at: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/how-to
 //[Accessed: 15 January 2025]
 
 using System.Text.Json;

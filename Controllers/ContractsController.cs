@@ -29,6 +29,11 @@ public class ContractsController : Controller
     // Microsoft. 2023. Filtering with LINQ in EF Core.
     // Available at: https://learn.microsoft.com/en-us/ef/core/querying/
     // [Accessed: 15 January 2025]
+    //
+    // Code attribution
+    // Stack Overflow. 2011. How to use LINQ Where with multiple conditions.
+    // Available at: https://stackoverflow.com/questions/3788029/how-to-use-linq-where-with-multiple-conditions
+    // [Accessed: 15 January 2025]
     public async Task<IActionResult> Index(ContractFilterViewModel filter)
     {
         var query = _context.Contracts
@@ -89,6 +94,11 @@ public class ContractsController : Controller
     // Code attribution
     // Microsoft. 2023. File Uploads in ASP.NET Core.
     // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads
+    // [Accessed: 15 January 2025]
+    //
+    // Code attribution
+    // Stack Overflow. 2012. Saving uploaded file with a unique name in ASP.NET MVC.
+    // Available at: https://stackoverflow.com/questions/13429116/saving-file-with-unique-name-asp-net
     // [Accessed: 15 January 2025]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -291,6 +301,11 @@ public class ContractsController : Controller
     // Code attribution
     // Microsoft. 2023. Saving Files in ASP.NET Core / IFormFile.
     // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads
+    // [Accessed: 15 January 2025]
+    //
+    // Code attribution
+    // Stack Overflow. 2016. Generate a GUID/UUID file name for uploaded files in ASP.NET.
+    // Available at: https://stackoverflow.com/questions/2138012/generating-a-unique-file-name-using-a-guid
     // [Accessed: 15 January 2025]
     private async Task<string> SaveFileAsync(IFormFile file)
     {
