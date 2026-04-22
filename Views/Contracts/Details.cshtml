@@ -1,0 +1,83 @@
+@model PROG7311_POE.Models.Contract
+@{
+    ViewData["Title"] = "Contract Details";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-glass btn-sm">? Back</a>
+    <h1 class="page-title mb-0">Contract <span>#@Model.Id</span></h1>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="glass-card">
+            <h5 style="color:var(--text-muted);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;">Contract Details</h5>
+            <div class="section-divider"></div>
+            <div class="detail-row"><span class="detail-label">Client</span><span class="detail-value">@Model.Client?.Name</span></div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                    <span class="status-badge badge-@Model.Status.ToString().ToLower()">@Model.Status</span>
+                </span>
+            </div>
+            <div class="detail-row"><span class="detail-label">Start Date</span><span class="detail-value">@Model.StartDate.ToString("yy/MM/dd")</span></div>
+            <div class="detail-row"><span class="detail-label">End Date</span><span class="detail-value">@Model.EndDate.ToString("yy/MM/dd")</span></div>
+            <div class="detail-row"><span class="detail-label">Service Level</span><span class="detail-value">@(Model.ServiceLevel ?? "—")</span></div>
+            <div class="detail-row">
+                <span class="detail-label">Agreement</span>
+                <span class="detail-value">
+                    @if (!string.IsNullOrEmpty(Model.AgreementFilePath))
+                    {
+                        <a asp-action="ViewAgreement" asp-route-id="@Model.Id" target="_blank" class="btn btn-outline-accent btn-sm">?? View Document</a>
+                    }
+                    else
+                    {
+                        <span style="color:var(--text-muted)">No file uploaded</span>
+                    }
+                </span>
+            </div>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-accent">Edit</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 style="color:var(--text-muted);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;margin:0">Service Requests (@Model.ServiceRequests.Count)</h5>
+            <a asp-controller="ServiceRequests" asp-action="Create" asp-route-contractId="@Model.Id" class="btn btn-accent btn-sm">+ Add Request</a>
+        </div>
+        <div class="glass-card p-0 overflow-hidden">
+            <table class="glms-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Cost (USD)</th>
+                        <th>Local (ZAR)</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sr in Model.ServiceRequests)
+                    {
+                        <tr>
+                            <td>@sr.Description</td>
+                            <td>$@sr.Cost.ToString("N2")</td>
+                            <td style="color:var(--success)">R @sr.LocalCost.ToString("N2")</td>
+                            <td><span class="status-badge badge-draft">@(sr.Status ?? "Pending")</span></td>
+                            <td>
+                                <a asp-controller="ServiceRequests" asp-action="Details" asp-route-id="@sr.Id" class="btn btn-glass btn-sm">View</a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.ServiceRequests.Any())
+                    {
+                        <tr><td colspan="5" class="text-center py-3" style="color:var(--text-muted)">No service requests yet.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

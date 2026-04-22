@@ -1,0 +1,43 @@
+@model IEnumerable<PROG7311_POE.Models.Client>
+@{
+    ViewData["Title"] = "Clients";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1 class="page-title mb-0">Clients</h1>
+    <a asp-action="Create" class="btn btn-accent">+ New Client</a>
+</div>
+
+<div class="glass-card p-0 overflow-hidden">
+    <table class="glms-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Region</th>
+                <th>Contact</th>
+                <th>Contracts</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td><strong>@c.Name</strong></td>
+                    <td>@c.Region</td>
+                    <td style="color:var(--text-muted)">@c.ContactDetails</td>
+                    <td><span class="status-badge badge-draft">@c.Contracts.Count</span></td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-glass btn-sm me-1">View</a>
+                        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-outline-accent btn-sm me-1">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@c.Id" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="5" class="text-center py-4" style="color:var(--text-muted)">No clients found. <a asp-action="Create">Add one</a>.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

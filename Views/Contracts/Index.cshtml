@@ -1,0 +1,102 @@
+@model PROG7311_POE.Models.ViewModels.ContractFilterViewModel
+@using PROG7311_POE.Models
+@{
+    ViewData["Title"] = "Contracts";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1 class="page-title mb-0">Contracts</h1>
+    <a asp-action="Create" class="btn btn-accent">+ New Contract</a>
+</div>
+
+<!-- Filter Panel -->
+<div class="glass-card mb-4">
+    <h6 style="color:var(--text-muted);font-size:.72rem;letter-spacing:1px;text-transform:uppercase;">Filter Contracts</h6>
+    <div class="section-divider"></div>
+    <form asp-action="Index" method="get">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Client Name</label>
+                <input name="ClientName" value="@Model.ClientName" class="form-control" placeholder="Search client..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Status</label>
+                <select name="Status" class="form-select">
+                    <option value="">All</option>
+                    @foreach (ContractStatus s in Enum.GetValues(typeof(ContractStatus)))
+                    {
+                        <option value="@s" selected="@(Model.Status == s ? "selected" : null)">@s</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Start From (yy/MM/dd)</label>
+                <input name="StartDateFrom" value="@Model.StartDateFrom" class="form-control" placeholder="25/01/01" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Start To (yy/MM/dd)</label>
+                <input name="StartDateTo" value="@Model.StartDateTo" class="form-control" placeholder="25/12/31" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">End From (yy/MM/dd)</label>
+                <input name="EndDateFrom" value="@Model.EndDateFrom" class="form-control" placeholder="26/01/01" />
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-accent w-100">Filter</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Results Table -->
+<div class="glass-card p-0 overflow-hidden">
+    <table class="glms-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Client</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Status</th>
+                <th>Service Level</th>
+                <th>Doc</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model.Results)
+            {
+                <tr>
+                    <td style="color:var(--text-muted)">#@c.Id</td>
+                    <td><strong>@c.Client?.Name</strong></td>
+                    <td>@c.StartDate.ToString("yy/MM/dd")</td>
+                    <td>@c.EndDate.ToString("yy/MM/dd")</td>
+                    <td>
+                        <span class="status-badge badge-@c.Status.ToString().ToLower()">@c.Status</span>
+                    </td>
+                    <td style="color:var(--text-muted)">@(c.ServiceLevel ?? "—")</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(c.AgreementFilePath))
+                        {
+                            <a asp-action="ViewAgreement" asp-route-id="@c.Id" target="_blank"
+                               class="btn btn-outline-accent btn-sm" title="View PDF">?? View</a>
+                        }
+                        else
+                        {
+                            <span style="color:var(--text-muted);font-size:.78rem;">None</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-glass btn-sm me-1">View</a>
+                        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-outline-accent btn-sm me-1">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@c.Id" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Results.Any())
+            {
+                <tr><td colspan="8" class="text-center py-4" style="color:var(--text-muted)">No contracts found. Adjust filters or <a asp-action="Create">create one</a>.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

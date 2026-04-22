@@ -1,0 +1,71 @@
+@model PROG7311_POE.Models.ViewModels.ServiceRequestFormViewModel
+@{
+    ViewData["Title"] = "New Service Request";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-glass btn-sm">? Back</a>
+    <h1 class="page-title mb-0">New <span>Service Request</span></h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="glass-card">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger mb-4"></div>
+
+                <div class="mb-3">
+                    <label asp-for="ContractId" class="form-label"></label>
+                    <select asp-for="ContractId" asp-items="ViewBag.Contracts" class="form-select">
+                        <option value="">— Select Contract —</option>
+                    </select>
+                    <span asp-validation-for="ContractId"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe the service to be rendered..."></textarea>
+                    <span asp-validation-for="Description"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Cost" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background:rgba(255,255,255,.07);border-color:var(--border);color:var(--text-muted)">USD $</span>
+                        <input asp-for="Cost" class="form-control" type="number" step="0.01" min="0.01" placeholder="0.00" />
+                    </div>
+                    <small style="color:var(--text-muted)">ZAR equivalent will be auto-calculated on save using live exchange rate.</small>
+                    <span asp-validation-for="Cost"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Status" class="form-label"></label>
+                    <input asp-for="Status" class="form-control" placeholder="e.g. Pending, In Progress, Completed" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-accent">Create Request</button>
+                    <a asp-action="Index" class="btn btn-glass">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-5 mt-4 mt-lg-0">
+        <div class="glass-card" style="border-color:rgba(10,255,237,.2)">
+            <h6 style="color:var(--accent);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;">?? Currency Conversion</h6>
+            <div class="section-divider"></div>
+            <p style="color:var(--text-muted);font-size:.85rem;line-height:1.6">
+                Enter the cost in <strong style="color:#fff">USD ($)</strong>. On save, the system will fetch the latest
+                USD ? ZAR exchange rate from <strong style="color:#fff">OpenExchangeRates</strong> and automatically
+                populate the <strong style="color:var(--success)">ZAR local cost</strong> field.
+            </p>
+            <hr />
+            <p style="color:var(--text-muted);font-size:.8rem">
+                ? Contract must be <span style="color:var(--success)">Active</span> or <span style="color:#8a8fa8">Draft</span> status.
+                Requests against <span style="color:var(--danger)">Expired</span> or <span style="color:var(--warning)">On Hold</span> contracts are blocked.
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

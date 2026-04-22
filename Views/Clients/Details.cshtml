@@ -1,0 +1,61 @@
+@model PROG7311_POE.Models.Client
+@{
+    ViewData["Title"] = "Client Details";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-glass btn-sm">? Back</a>
+    <h1 class="page-title mb-0">@Model.Name</h1>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="glass-card">
+            <h5 style="color:var(--text-muted);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;">Client Information</h5>
+            <div class="section-divider"></div>
+            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">@Model.Name</span></div>
+            <div class="detail-row"><span class="detail-label">Region</span><span class="detail-value">@Model.Region</span></div>
+            <div class="detail-row"><span class="detail-label">Contact</span><span class="detail-value">@Model.ContactDetails</span></div>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-accent">Edit</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="glass-card p-0 overflow-hidden">
+            <div class="p-3 ps-4">
+                <h5 style="color:var(--text-muted);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;">Contracts (@Model.Contracts.Count)</h5>
+            </div>
+            <table class="glms-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ct in Model.Contracts)
+                    {
+                        <tr>
+                            <td>#@ct.Id</td>
+                            <td>@ct.StartDate.ToString("yy/MM/dd")</td>
+                            <td>@ct.EndDate.ToString("yy/MM/dd")</td>
+                            <td>
+                                <span class="status-badge badge-@ct.Status.ToString().ToLower()">@ct.Status</span>
+                            </td>
+                            <td><a asp-controller="Contracts" asp-action="Details" asp-route-id="@ct.Id" class="btn btn-glass btn-sm">View</a></td>
+                        </tr>
+                    }
+                    @if (!Model.Contracts.Any())
+                    {
+                        <tr><td colspan="5" class="text-center py-3" style="color:var(--text-muted)">No contracts yet.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

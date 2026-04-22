@@ -1,8 +1,68 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row align-items-center mb-5">
+    <div class="col-lg-8">
+        <p class="text-muted mb-1" style="font-size:.8rem;letter-spacing:1px;text-transform:uppercase;">Global Logistics Management System</p>
+        <h1 class="page-title mb-2">Command <span>Centre</span></h1>
+        <p style="color:var(--text-muted);max-width:520px;">Manage clients, contracts, and service requests from a single unified interface. Real-time ZAR conversion powered by OpenExchangeRates.</p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <a asp-controller="Contracts" asp-action="Create" class="btn btn-accent me-2">+ New Contract</a>
+        <a asp-controller="ServiceRequests" asp-action="Create" class="btn btn-glass">+ Service Request</a>
+    </div>
 </div>
+
+<div class="row g-3 mb-5">
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-value">→</div>
+            <div class="stat-label">Clients</div>
+            <a asp-controller="Clients" asp-action="Index" class="btn btn-outline-accent btn-sm mt-3">View All</a>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-value">→</div>
+            <div class="stat-label">Contracts</div>
+            <a asp-controller="Contracts" asp-action="Index" class="btn btn-outline-accent btn-sm mt-3">View All</a>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-value">→</div>
+            <div class="stat-label">Service Requests</div>
+            <a asp-controller="ServiceRequests" asp-action="Index" class="btn btn-outline-accent btn-sm mt-3">View All</a>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <h5 style="color:var(--text-muted);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;">Quick Navigation</h5>
+    <div class="section-divider"></div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a asp-controller="Clients" asp-action="Create" class="btn btn-glass w-100 text-start py-3">
+                <span style="font-size:1.2rem;">👤</span><br/>
+                <span style="font-weight:700;">New Client</span><br/>
+                <small style="color:var(--text-muted);text-transform:none;font-size:.78rem;">Add a logistics client to the system</small>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-controller="Contracts" asp-action="Create" class="btn btn-glass w-100 text-start py-3">
+                <span style="font-size:1.2rem;">📄</span><br/>
+                <span style="font-weight:700;">New Contract</span><br/>
+                <small style="color:var(--text-muted);text-transform:none;font-size:.78rem;">Draft a new client agreement</small>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-controller="ServiceRequests" asp-action="Create" class="btn btn-glass w-100 text-start py-3">
+                <span style="font-size:1.2rem;">🔧</span><br/>
+                <span style="font-weight:700;">New Service Request</span><br/>
+                <small style="color:var(--text-muted);text-transform:none;font-size:.78rem;">Log a billable USD service item</small>
+            </a>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,72 @@
+@model PROG7311_POE.Models.ViewModels.ContractFormViewModel
+@{
+    ViewData["Title"] = "Edit Contract";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-glass btn-sm">? Back</a>
+    <h1 class="page-title mb-0">Edit <span>Contract #@Model.Id</span></h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="glass-card">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                <div class="mb-3">
+                    <label asp-for="ClientId" class="form-label"></label>
+                    <select asp-for="ClientId" asp-items="ViewBag.Clients" class="form-select">
+                        <option value="">— Select Client —</option>
+                    </select>
+                    <span asp-validation-for="ClientId"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="StartDate" class="form-label"></label>
+                        <input asp-for="StartDate" class="form-control" type="date" />
+                        <span asp-validation-for="StartDate"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EndDate" class="form-label"></label>
+                        <input asp-for="EndDate" class="form-control" type="date" />
+                        <span asp-validation-for="EndDate"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" asp-items="Html.GetEnumSelectList<PROG7311_POE.Models.ContractStatus>()" class="form-select"></select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ServiceLevel" class="form-label"></label>
+                    <input asp-for="ServiceLevel" class="form-control" />
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="AgreementFile" class="form-label"></label>
+                    @if (!string.IsNullOrEmpty(Model.ExistingAgreementFilePath))
+                    {
+                        <div class="mb-2">
+                            <small style="color:var(--text-muted)">Current file: </small>
+                            <a asp-action="ViewAgreement" asp-route-id="@Model.Id" target="_blank" class="btn btn-outline-accent btn-sm">?? View Current</a>
+                        </div>
+                    }
+                    <input asp-for="AgreementFile" type="file" class="form-control" accept=".pdf" />
+                    <small style="color:var(--text-muted)">Upload a new PDF to replace the existing one. Only PDF files accepted.</small>
+                    <span asp-validation-for="AgreementFile"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-accent">Save Changes</button>
+                    <a asp-action="Index" class="btn btn-glass">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

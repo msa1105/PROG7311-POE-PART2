@@ -1,0 +1,26 @@
+@model PROG7311_POE.Models.Client
+@{
+    ViewData["Title"] = "Delete Client";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-glass btn-sm">? Back</a>
+    <h1 class="page-title mb-0" style="color:var(--danger);">Delete <span>Client</span></h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="glass-card" style="border-color:rgba(255,71,87,.3)">
+            <p style="color:var(--text-muted)">Are you sure you want to permanently remove this client?</p>
+            <div class="section-divider"></div>
+            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">@Model.Name</span></div>
+            <div class="detail-row"><span class="detail-label">Region</span><span class="detail-value">@Model.Region</span></div>
+            <div class="detail-row"><span class="detail-label">Contact</span><span class="detail-value">@Model.ContactDetails</span></div>
+            <div class="section-divider"></div>
+            <form asp-action="Delete" method="post" class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a asp-action="Index" class="btn btn-glass">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

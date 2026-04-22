@@ -1,0 +1,54 @@
+@model PROG7311_POE.Models.ViewModels.ServiceRequestFormViewModel
+@{
+    ViewData["Title"] = "Edit Service Request";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-glass btn-sm">? Back</a>
+    <h1 class="page-title mb-0">Edit <span>Request #@Model.Id</span></h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="glass-card">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="All" class="alert alert-danger mb-4"></div>
+
+                <div class="mb-3">
+                    <label asp-for="ContractId" class="form-label"></label>
+                    <select asp-for="ContractId" asp-items="ViewBag.Contracts" class="form-select"></select>
+                    <span asp-validation-for="ContractId"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Cost" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background:rgba(255,255,255,.07);border-color:var(--border);color:var(--text-muted)">USD $</span>
+                        <input asp-for="Cost" class="form-control" type="number" step="0.01" min="0.01" />
+                    </div>
+                    <small style="color:var(--text-muted)">ZAR will be recalculated on save.</small>
+                    <span asp-validation-for="Cost"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Status" class="form-label"></label>
+                    <input asp-for="Status" class="form-control" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-accent">Save Changes</button>
+                    <a asp-action="Index" class="btn btn-glass">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }
