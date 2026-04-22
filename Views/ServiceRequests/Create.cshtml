@@ -4,7 +4,7 @@
 }
 
 <div class="d-flex align-items-center gap-3 mb-4">
-    <a asp-action="Index" class="btn btn-glass btn-sm">? Back</a>
+    <a asp-action="Index" class="btn btn-glass btn-sm"><i class="bi bi-arrow-left me-1"></i>Back</a>
     <h1 class="page-title mb-0">New <span>Service Request</span></h1>
 </div>
 
@@ -52,7 +52,7 @@
     </div>
     <div class="col-lg-5 mt-4 mt-lg-0">
         <div class="glass-card" style="border-color:rgba(10,255,237,.2)">
-            <h6 style="color:var(--accent);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;">?? Currency Conversion</h6>
+            <h6 style="color:var(--accent);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;"><i class="bi bi-currency-exchange me-1"></i>Currency Conversion</h6>
             <div class="section-divider"></div>
             <p style="color:var(--text-muted);font-size:.85rem;line-height:1.6">
                 Enter the cost in <strong style="color:#fff">USD ($)</strong>. On save, the system will fetch the latest
@@ -61,7 +61,7 @@
             </p>
             <hr />
             <p style="color:var(--text-muted);font-size:.8rem">
-                ? Contract must be <span style="color:var(--success)">Active</span> or <span style="color:#8a8fa8">Draft</span> status.
+                <i class="bi bi-info-circle me-1"></i> Contract must be <span style="color:var(--success)">Active</span> or <span style="color:#8a8fa8">Draft</span> status.
                 Requests against <span style="color:var(--danger)">Expired</span> or <span style="color:var(--warning)">On Hold</span> contracts are blocked.
             </p>
         </div>

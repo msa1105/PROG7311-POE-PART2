@@ -17,21 +17,21 @@
 <div class="row g-3 mb-5">
     <div class="col-sm-4">
         <div class="stat-card">
-            <div class="stat-value">→</div>
+            <div class="stat-value"><i class="bi bi-people"></i></div>
             <div class="stat-label">Clients</div>
             <a asp-controller="Clients" asp-action="Index" class="btn btn-outline-accent btn-sm mt-3">View All</a>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="stat-card">
-            <div class="stat-value">→</div>
+            <div class="stat-value"><i class="bi bi-file-earmark-check"></i></div>
             <div class="stat-label">Contracts</div>
             <a asp-controller="Contracts" asp-action="Index" class="btn btn-outline-accent btn-sm mt-3">View All</a>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="stat-card">
-            <div class="stat-value">→</div>
+            <div class="stat-value"><i class="bi bi-clipboard-check"></i></div>
             <div class="stat-label">Service Requests</div>
             <a asp-controller="ServiceRequests" asp-action="Index" class="btn btn-outline-accent btn-sm mt-3">View All</a>
         </div>
@@ -44,21 +44,21 @@
     <div class="row g-3">
         <div class="col-md-4">
             <a asp-controller="Clients" asp-action="Create" class="btn btn-glass w-100 text-start py-3">
-                <span style="font-size:1.2rem;">👤</span><br/>
+                <i class="bi bi-person-plus" style="font-size:1.5rem;"></i><br/>
                 <span style="font-weight:700;">New Client</span><br/>
                 <small style="color:var(--text-muted);text-transform:none;font-size:.78rem;">Add a logistics client to the system</small>
             </a>
         </div>
         <div class="col-md-4">
             <a asp-controller="Contracts" asp-action="Create" class="btn btn-glass w-100 text-start py-3">
-                <span style="font-size:1.2rem;">📄</span><br/>
+                <i class="bi bi-file-earmark-text" style="font-size:1.5rem;"></i><br/>
                 <span style="font-weight:700;">New Contract</span><br/>
                 <small style="color:var(--text-muted);text-transform:none;font-size:.78rem;">Draft a new client agreement</small>
             </a>
         </div>
         <div class="col-md-4">
             <a asp-controller="ServiceRequests" asp-action="Create" class="btn btn-glass w-100 text-start py-3">
-                <span style="font-size:1.2rem;">🔧</span><br/>
+                <i class="bi bi-tools" style="font-size:1.5rem;"></i><br/>
                 <span style="font-weight:700;">New Service Request</span><br/>
                 <small style="color:var(--text-muted);text-transform:none;font-size:.78rem;">Log a billable USD service item</small>
             </a>

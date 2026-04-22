@@ -5,8 +5,8 @@
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
-    <h1 class="page-title mb-0">Contracts</h1>
-    <a asp-action="Create" class="btn btn-accent">+ New Contract</a>
+    <h1 class="page-title mb-0"><i class="bi bi-file-earmark-check me-2"></i>Contracts</h1>
+    <a asp-action="Create" class="btn btn-accent"><i class="bi bi-plus-circle me-1"></i>New Contract</a>
 </div>
 
 <!-- Filter Panel -->
@@ -79,7 +79,7 @@
                         @if (!string.IsNullOrEmpty(c.AgreementFilePath))
                         {
                             <a asp-action="ViewAgreement" asp-route-id="@c.Id" target="_blank"
-                               class="btn btn-outline-accent btn-sm" title="View PDF">?? View</a>
+                               class="btn btn-outline-accent btn-sm" title="View PDF"><i class="bi bi-file-pdf me-1"></i>View</a>
                         }
                         else
                         {
@@ -87,9 +87,9 @@
                         }
                     </td>
                     <td class="text-end">
-                        <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-glass btn-sm me-1">View</a>
-                        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-outline-accent btn-sm me-1">Edit</a>
-                        <a asp-action="Delete" asp-route-id="@c.Id" class="btn btn-danger btn-sm">Delete</a>
+                        <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-glass btn-sm me-1"><i class="bi bi-eye"></i></a>
+                        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-outline-accent btn-sm me-1"><i class="bi bi-pencil"></i></a>
+                        <a asp-action="Delete" asp-route-id="@c.Id" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
                     </td>
                 </tr>
             }

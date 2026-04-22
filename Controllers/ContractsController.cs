@@ -14,6 +14,8 @@ public class ContractsController : Controller
     private readonly IFileValidationService _fileValidation;
     private readonly IWebHostEnvironment _env;
 
+    private const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+
     public ContractsController(ApplicationDbContext context,
         IFileValidationService fileValidation,
         IWebHostEnvironment env)
@@ -23,6 +25,10 @@ public class ContractsController : Controller
         _env = env;
     }
 
+    // Code attribution
+    // Microsoft. 2023. Filtering with LINQ in EF Core.
+    // Available at: https://learn.microsoft.com/en-us/ef/core/querying/
+    // [Accessed: 15 January 2025]
     public async Task<IActionResult> Index(ContractFilterViewModel filter)
     {
         var query = _context.Contracts
@@ -80,21 +86,38 @@ public class ContractsController : Controller
         return View(new ContractFormViewModel());
     }
 
+    // Code attribution
+    // Microsoft. 2023. File Uploads in ASP.NET Core.
+    // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads
+    // [Accessed: 15 January 2025]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ContractFormViewModel vm)
     {
         if (vm.AgreementFile != null)
         {
-            try { _fileValidation.IsValidPdf(vm.AgreementFile); }
-            catch (InvalidOperationException ex)
+            if (vm.AgreementFile.Length > MaxFileSizeBytes)
+                ModelState.AddModelError(nameof(vm.AgreementFile), "File must be 10 MB or smaller.");
+            else
             {
-                ModelState.AddModelError("AgreementFile", ex.Message);
+                try { _fileValidation.IsValidPdf(vm.AgreementFile); }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(nameof(vm.AgreementFile), ex.Message);
+                }
             }
         }
 
         if (!ModelState.IsValid)
         {
+            PopulateClientDropdown(vm.ClientId);
+            return View(vm);
+        }
+
+        // Verify the selected client actually exists
+        if (!await _context.Clients.AnyAsync(c => c.Id == vm.ClientId))
+        {
+            ModelState.AddModelError(nameof(vm.ClientId), "The selected client does not exist.");
             PopulateClientDropdown(vm.ClientId);
             return View(vm);
         }
@@ -105,15 +128,33 @@ public class ContractsController : Controller
             StartDate = vm.StartDate,
             EndDate = vm.EndDate,
             Status = vm.Status,
-            ServiceLevel = vm.ServiceLevel
+            ServiceLevel = vm.ServiceLevel?.Trim()
         };
 
         if (vm.AgreementFile != null)
-            contract.AgreementFilePath = await SaveFileAsync(vm.AgreementFile);
+        {
+            try { contract.AgreementFilePath = await SaveFileAsync(vm.AgreementFile); }
+            catch (IOException)
+            {
+                ModelState.AddModelError(nameof(vm.AgreementFile), "Failed to save the file. Please try again.");
+                PopulateClientDropdown(vm.ClientId);
+                return View(vm);
+            }
+        }
 
-        _context.Contracts.Add(contract);
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            _context.Contracts.Add(contract);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Contract created successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (DbUpdateException)
+        {
+            ModelState.AddModelError(string.Empty, "Unable to save the contract. Please try again.");
+            PopulateClientDropdown(vm.ClientId);
+            return View(vm);
+        }
     }
 
     public async Task<IActionResult> Edit(int? id)
@@ -143,10 +184,15 @@ public class ContractsController : Controller
 
         if (vm.AgreementFile != null)
         {
-            try { _fileValidation.IsValidPdf(vm.AgreementFile); }
-            catch (InvalidOperationException ex)
+            if (vm.AgreementFile.Length > MaxFileSizeBytes)
+                ModelState.AddModelError(nameof(vm.AgreementFile), "File must be 10 MB or smaller.");
+            else
             {
-                ModelState.AddModelError("AgreementFile", ex.Message);
+                try { _fileValidation.IsValidPdf(vm.AgreementFile); }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(nameof(vm.AgreementFile), ex.Message);
+                }
             }
         }
 
@@ -163,22 +209,39 @@ public class ContractsController : Controller
         contract.StartDate = vm.StartDate;
         contract.EndDate = vm.EndDate;
         contract.Status = vm.Status;
-        contract.ServiceLevel = vm.ServiceLevel;
+        contract.ServiceLevel = vm.ServiceLevel?.Trim();
 
         if (vm.AgreementFile != null)
-            contract.AgreementFilePath = await SaveFileAsync(vm.AgreementFile);
+        {
+            try { contract.AgreementFilePath = await SaveFileAsync(vm.AgreementFile); }
+            catch (IOException)
+            {
+                ModelState.AddModelError(nameof(vm.AgreementFile), "Failed to save the file. Please try again.");
+                PopulateClientDropdown(vm.ClientId);
+                return View(vm);
+            }
+        }
 
         try
         {
             _context.Update(contract);
             await _context.SaveChangesAsync();
+            TempData["Success"] = $"Contract #{id} updated successfully.";
+            return RedirectToAction(nameof(Index));
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!_context.Contracts.Any(c => c.Id == id)) return NotFound();
-            throw;
+            if (!await _context.Contracts.AnyAsync(c => c.Id == id)) return NotFound();
+            ModelState.AddModelError(string.Empty, "This record was modified by another user. Please reload and try again.");
+            PopulateClientDropdown(vm.ClientId);
+            return View(vm);
         }
-        return RedirectToAction(nameof(Index));
+        catch (DbUpdateException)
+        {
+            ModelState.AddModelError(string.Empty, "Unable to save changes. Please try again.");
+            PopulateClientDropdown(vm.ClientId);
+            return View(vm);
+        }
     }
 
     public async Task<IActionResult> Delete(int? id)
@@ -196,8 +259,19 @@ public class ContractsController : Controller
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var contract = await _context.Contracts.FindAsync(id);
-        if (contract != null) _context.Contracts.Remove(contract);
-        await _context.SaveChangesAsync();
+        if (contract == null) return NotFound();
+
+        try
+        {
+            _context.Contracts.Remove(contract);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Contract #{id} was deleted.";
+        }
+        catch (DbUpdateException)
+        {
+            TempData["Error"] = "Unable to delete this contract. Please try again.";
+        }
+
         return RedirectToAction(nameof(Index));
     }
 
@@ -214,18 +288,18 @@ public class ContractsController : Controller
         return PhysicalFile(physicalPath, "application/pdf");
     }
 
-    //Code attribution
-    //OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
-    //Available at: https://chat.openai.com/
-    //[Accessed: 15 January 2025]
+    // Code attribution
+    // Microsoft. 2023. Saving Files in ASP.NET Core / IFormFile.
+    // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads
+    // [Accessed: 15 January 2025]
     private async Task<string> SaveFileAsync(IFormFile file)
     {
         var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "contracts");
         Directory.CreateDirectory(uploadsFolder);
 
-        // Use UUID/GUID naming to prevent file overwriting
-        var guid = Guid.NewGuid().ToString("N"); // N format removes hyphens
-        var extension = Path.GetExtension(file.FileName);
+        // GUID naming prevents overwriting: contract_<guid>.pdf
+        var guid = Guid.NewGuid().ToString("N");
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var uniqueName = $"contract_{guid}{extension}";
 
         var filePath = Path.Combine(uploadsFolder, uniqueName);
@@ -236,6 +310,8 @@ public class ContractsController : Controller
 
     private void PopulateClientDropdown(int? selectedId = null)
     {
-        ViewBag.Clients = new SelectList(_context.Clients.OrderBy(c => c.Name), "Id", "Name", selectedId);
+        ViewBag.Clients = new SelectList(
+            _context.Clients.OrderBy(c => c.Name),
+            "Id", "Name", selectedId);
     }
 }

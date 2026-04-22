@@ -4,8 +4,8 @@
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
-    <h1 class="page-title mb-0">Service <span>Requests</span></h1>
-    <a asp-action="Create" class="btn btn-accent">+ New Request</a>
+    <h1 class="page-title mb-0"><i class="bi bi-clipboard-check me-2"></i>Service <span>Requests</span></h1>
+    <a asp-action="Create" class="btn btn-accent"><i class="bi bi-plus-circle me-1"></i>New Request</a>
 </div>
 
 <div class="glass-card p-0 overflow-hidden">
@@ -34,9 +34,9 @@
                     <td style="color:var(--success)">R @sr.LocalCost.ToString("N2")</td>
                     <td><span class="status-badge badge-draft">@(sr.Status ?? "Pending")</span></td>
                     <td class="text-end">
-                        <a asp-action="Details" asp-route-id="@sr.Id" class="btn btn-glass btn-sm me-1">View</a>
-                        <a asp-action="Edit" asp-route-id="@sr.Id" class="btn btn-outline-accent btn-sm me-1">Edit</a>
-                        <a asp-action="Delete" asp-route-id="@sr.Id" class="btn btn-danger btn-sm">Delete</a>
+                        <a asp-action="Details" asp-route-id="@sr.Id" class="btn btn-glass btn-sm me-1"><i class="bi bi-eye"></i></a>
+                        <a asp-action="Edit" asp-route-id="@sr.Id" class="btn btn-outline-accent btn-sm me-1"><i class="bi bi-pencil"></i></a>
+                        <a asp-action="Delete" asp-route-id="@sr.Id" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
                     </td>
                 </tr>
             }
