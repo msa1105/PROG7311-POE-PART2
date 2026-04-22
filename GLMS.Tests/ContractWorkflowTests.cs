@@ -6,6 +6,7 @@ namespace GLMS.Tests;
 /// <summary>
 /// Test 3 – Verify business workflow: ServiceRequest creation must fail
 /// when the parent Contract is Expired or OnHold.
+/// Draft contracts are allowed to have service requests (preparation phase).
 /// </summary>
 public class ContractWorkflowTests
 {
@@ -48,5 +49,12 @@ public class ContractWorkflowTests
         // Should not throw
         var ex = Record.Exception(() => _sut.ValidateServiceRequestCreation(contract));
         Assert.Null(ex);
+    }
+
+    [Fact]
+    public void ValidateServiceRequestCreation_NullContract_ThrowsException()
+    {
+        // Edge case: null contract
+        Assert.Throws<NullReferenceException>(() => _sut.ValidateServiceRequestCreation(null!));
     }
 }

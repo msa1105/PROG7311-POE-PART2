@@ -1,3 +1,8 @@
+//Code attribution
+//OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
+//Available at: https://chat.openai.com/
+//[Accessed: 15 January 2025]
+
 using System.Text.Json;
 
 namespace PROG7311_POE.Services;
@@ -19,18 +24,33 @@ public class CurrencyService : ICurrencyService
 
     public async Task<decimal> GetUsdToZarRateAsync()
     {
-        var endpoint = $"{_baseUrl}latest.json?app_id={_appId}&symbols=ZAR";
-        var response = await _httpClient.GetAsync(endpoint);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var endpoint = $"{_baseUrl}latest.json?app_id={_appId}&symbols=ZAR";
+            var response = await _httpClient.GetAsync(endpoint);
+            response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
-        var rate = doc.RootElement
-            .GetProperty("rates")
-            .GetProperty("ZAR")
-            .GetDecimal();
+            var json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            var rate = doc.RootElement
+                .GetProperty("rates")
+                .GetProperty("ZAR")
+                .GetDecimal();
 
-        return rate;
+            return rate;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new InvalidOperationException(
+                "Failed to retrieve exchange rate from OpenExchangeRates API. Please check your internet connection and API key.", 
+                ex);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                "An error occurred while processing the exchange rate data.", 
+                ex);
+        }
     }
 
     public async Task<decimal> ConvertUsdToZarAsync(decimal usdAmount)

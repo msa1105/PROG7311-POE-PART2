@@ -214,11 +214,20 @@ public class ContractsController : Controller
         return PhysicalFile(physicalPath, "application/pdf");
     }
 
+    //Code attribution
+    //OpenAI. 2025. ChatGPT (Version GPT-4). [Large language model]
+    //Available at: https://chat.openai.com/
+    //[Accessed: 15 January 2025]
     private async Task<string> SaveFileAsync(IFormFile file)
     {
         var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "contracts");
         Directory.CreateDirectory(uploadsFolder);
-        var uniqueName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+
+        // Use UUID/GUID naming to prevent file overwriting
+        var guid = Guid.NewGuid().ToString("N"); // N format removes hyphens
+        var extension = Path.GetExtension(file.FileName);
+        var uniqueName = $"contract_{guid}{extension}";
+
         var filePath = Path.Combine(uploadsFolder, uniqueName);
         await using var stream = new FileStream(filePath, FileMode.Create);
         await file.CopyToAsync(stream);
