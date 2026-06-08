@@ -75,15 +75,24 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlServerOptionsAction: sqlOptions =>
-        {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToAdd: null);
-        }));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (connectionString == "InMemory")
+    {
+        options.UseInMemoryDatabase("InMemoryDbForTesting");
+    }
+    else
+    {
+        options.UseSqlServer(connectionString,
+            sqlServerOptionsAction: sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
+            });
+    }
+});
 
 builder.Services.AddHttpClient<ICurrencyService, CurrencyService>();
 builder.Services.AddScoped<IFileValidationService, FileValidationService>();
@@ -111,9 +120,17 @@ using (var scope = app.Services.CreateScope())
     {
         try
         {
-            logger.LogInformation("Applying pending migrations...");
-            context.Database.Migrate();
-            logger.LogInformation("Database migrated successfully. Seeding data...");
+            if (context.Database.IsRelational())
+            {
+                logger.LogInformation("Applying pending migrations...");
+                context.Database.Migrate();
+            }
+            else
+            {
+                logger.LogInformation("Ensuring database is created...");
+                context.Database.EnsureCreated();
+            }
+            logger.LogInformation("Database migrated/created successfully. Seeding data...");
             DbSeeder.SeedAsync(context).Wait();
             logger.LogInformation("Database seeded successfully.");
             break;
