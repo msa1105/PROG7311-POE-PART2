@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -21,7 +21,7 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarMain">
-                    <ul class="navbar-nav ms-auto gap-2">
+                    <ul class="navbar-nav ms-auto gap-2 align-items-center">
                         <li class="nav-item">
                             <a class="nav-link glms-nav-link" asp-controller="Clients" asp-action="Index">Clients</a>
                         </li>
@@ -31,6 +31,20 @@
                         <li class="nav-item">
                             <a class="nav-link glms-nav-link" asp-controller="ServiceRequests" asp-action="Index">Service Requests</a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item ms-lg-3 d-flex align-items-center gap-3">
+                                <span class="text-muted small" style="font-size: .8rem;">
+                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                </span>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline m-0 p-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-accent btn-sm py-1 px-3" style="font-size: 0.72rem; text-transform: uppercase;">
+                                        Logout <i class="bi bi-box-arrow-right"></i>
+                                    </button>
+                                </form>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

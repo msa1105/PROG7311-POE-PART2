@@ -4,6 +4,6 @@ public enum ContractStatus
 {
     Draft,
     Active,
-    Expired,
-    OnHold
+    OnHold,
+    Expired
 }

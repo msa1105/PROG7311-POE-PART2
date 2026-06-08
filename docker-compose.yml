@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-server-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourSecurePassword123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - db_data:/var/opt/mssql
+    networks:
+      - glms-network
+
+  api:
+    image: glms-backend-api
+    container_name: glms-backend-api
+    build:
+      context: .
+      dockerfile: PROG7311-POE.Api/Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=GLMS_DB;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - Jwt__Key=SuperSecureDemoJwtSecretKeyGLMSProject2026!
+      - Jwt__Issuer=GLMS_Issuer
+      - Jwt__Audience=GLMS_Audience
+      - Jwt__ExpireMinutes=60
+      - ExternalServices__OpenExchangeRates__AppId=c7bd7b18fcd9463caaf5aed0b11608d2
+    depends_on:
+      - db
+    volumes:
+      - uploads_data:/app/wwwroot/uploads/contracts
+    networks:
+      - glms-network
+
+  web:
+    image: glms-frontend-web
+    container_name: glms-frontend-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiSettings__BaseUrl=http://api:8080/
+      - Jwt__Key=SuperSecureDemoJwtSecretKeyGLMSProject2026!
+      - Jwt__Issuer=GLMS_Issuer
+      - Jwt__Audience=GLMS_Audience
+      - Jwt__ExpireMinutes=60
+      - ExternalServices__OpenExchangeRates__AppId=c7bd7b18fcd9463caaf5aed0b11608d2
+    depends_on:
+      - api
+    networks:
+      - glms-network
+
+networks:
+  glms-network:
+    driver: bridge
+
+volumes:
+  db_data:
+  uploads_data:

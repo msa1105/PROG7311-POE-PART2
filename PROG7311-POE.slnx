@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="GLMS.Tests/GLMS.Tests.csproj" />
   <Project Path="PROG7311-POE.csproj" />
+  <Project Path="PROG7311-POE.Shared/PROG7311-POE.Shared.csproj" />
+  <Project Path="PROG7311-POE.Api/PROG7311-POE.Api.csproj" />
 </Solution>

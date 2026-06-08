@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -16,10 +16,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PROG7311-POE.csproj" />
+    <ProjectReference Include="..\PROG7311-POE.Shared\PROG7311-POE.Shared.csproj" />
+    <ProjectReference Include="..\PROG7311-POE.Api\PROG7311-POE.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

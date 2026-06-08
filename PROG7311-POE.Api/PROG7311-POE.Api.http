@@ -1,0 +1,6 @@
+@PROG7311_POE.Api_HostAddress = http://localhost:5186
+
+GET {{PROG7311_POE.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

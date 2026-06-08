@@ -1,134 +1,106 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using PROG7311_POE.Data;
 using PROG7311_POE.Models;
 using PROG7311_POE.Models.ViewModels;
-using PROG7311_POE.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace PROG7311_POE.Controllers;
 
+[Authorize]
 public class ContractsController : Controller
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IFileValidationService _fileValidation;
-    private readonly IWebHostEnvironment _env;
+    private readonly HttpClient _client;
 
-    private const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
-
-    public ContractsController(ApplicationDbContext context,
-        IFileValidationService fileValidation,
-        IWebHostEnvironment env)
+    public ContractsController(IHttpClientFactory clientFactory)
     {
-        _context = context;
-        _fileValidation = fileValidation;
-        _env = env;
+        _client = clientFactory.CreateClient("GlmsApi");
     }
 
-    // Code attribution
-    // Microsoft. 2023. Filtering with LINQ in EF Core.
-    // Available at: https://learn.microsoft.com/en-us/ef/core/querying/
-    // [Accessed: 15 January 2025]
-    //
-    // Code attribution
-    // Stack Overflow. 2011. How to use LINQ Where with multiple conditions.
-    // Available at: https://stackoverflow.com/questions/3788029/how-to-use-linq-where-with-multiple-conditions
-    // [Accessed: 15 January 2025]
     public async Task<IActionResult> Index(ContractFilterViewModel filter)
     {
-        var query = _context.Contracts
-            .Include(c => c.Client)
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(filter.ClientName))
-            query = query.Where(c => c.Client!.Name.Contains(filter.ClientName));
-
+        var url = $"api/Contracts?clientName={System.Uri.EscapeDataString(filter.ClientName ?? "")}";
         if (filter.Status.HasValue)
-            query = query.Where(c => c.Status == filter.Status.Value);
+        {
+            url += $"&status={(int)filter.Status.Value}";
+        }
 
-        if (!string.IsNullOrWhiteSpace(filter.StartDateFrom) &&
-            DateTime.TryParseExact(filter.StartDateFrom, "yy/MM/dd",
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None, out var sdFrom))
-            query = query.Where(c => c.StartDate >= sdFrom);
+        var response = await _client.GetAsync(url);
+        if (response.IsSuccessStatusCode)
+        {
+            var results = await response.Content.ReadFromJsonAsync<List<Contract>>();
+            var query = (results ?? new List<Contract>()).AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(filter.StartDateTo) &&
-            DateTime.TryParseExact(filter.StartDateTo, "yy/MM/dd",
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None, out var sdTo))
-            query = query.Where(c => c.StartDate <= sdTo);
+            if (!string.IsNullOrWhiteSpace(filter.StartDateFrom) &&
+                DateTime.TryParseExact(filter.StartDateFrom, "yy/MM/dd",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var sdFrom))
+                query = query.Where(c => c.StartDate >= sdFrom);
 
-        if (!string.IsNullOrWhiteSpace(filter.EndDateFrom) &&
-            DateTime.TryParseExact(filter.EndDateFrom, "yy/MM/dd",
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None, out var edFrom))
-            query = query.Where(c => c.EndDate >= edFrom);
+            if (!string.IsNullOrWhiteSpace(filter.StartDateTo) &&
+                DateTime.TryParseExact(filter.StartDateTo, "yy/MM/dd",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var sdTo))
+                query = query.Where(c => c.StartDate <= sdTo);
 
-        if (!string.IsNullOrWhiteSpace(filter.EndDateTo) &&
-            DateTime.TryParseExact(filter.EndDateTo, "yy/MM/dd",
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None, out var edTo))
-            query = query.Where(c => c.EndDate <= edTo);
+            if (!string.IsNullOrWhiteSpace(filter.EndDateFrom) &&
+                DateTime.TryParseExact(filter.EndDateFrom, "yy/MM/dd",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var edFrom))
+                query = query.Where(c => c.EndDate >= edFrom);
 
-        filter.Results = await query.OrderByDescending(c => c.StartDate).ToListAsync();
+            if (!string.IsNullOrWhiteSpace(filter.EndDateTo) &&
+                DateTime.TryParseExact(filter.EndDateTo, "yy/MM/dd",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var edTo))
+                query = query.Where(c => c.EndDate <= edTo);
+
+            filter.Results = query.OrderByDescending(c => c.StartDate).ToList();
+        }
+        else
+        {
+            TempData["Error"] = "Unable to retrieve contracts from the API.";
+        }
+
         return View(filter);
     }
 
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
-        var contract = await _context.Contracts
-            .Include(c => c.Client)
-            .Include(c => c.ServiceRequests)
-            .FirstOrDefaultAsync(c => c.Id == id);
-        if (contract == null) return NotFound();
-        return View(contract);
+        
+        var response = await _client.GetAsync($"api/Contracts/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            var contract = await response.Content.ReadFromJsonAsync<Contract>();
+            if (contract == null) return NotFound();
+            return View(contract);
+        }
+        return NotFound();
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        PopulateClientDropdown();
+        await PopulateClientDropdownAsync();
         return View(new ContractFormViewModel());
     }
 
-    // Code attribution
-    // Microsoft. 2023. File Uploads in ASP.NET Core.
-    // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads
-    // [Accessed: 15 January 2025]
-    //
-    // Code attribution
-    // Stack Overflow. 2012. Saving uploaded file with a unique name in ASP.NET MVC.
-    // Available at: https://stackoverflow.com/questions/13429116/saving-file-with-unique-name-asp-net
-    // [Accessed: 15 January 2025]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ContractFormViewModel vm)
     {
-        if (vm.AgreementFile != null)
-        {
-            if (vm.AgreementFile.Length > MaxFileSizeBytes)
-                ModelState.AddModelError(nameof(vm.AgreementFile), "File must be 10 MB or smaller.");
-            else
-            {
-                try { _fileValidation.IsValidPdf(vm.AgreementFile); }
-                catch (InvalidOperationException ex)
-                {
-                    ModelState.AddModelError(nameof(vm.AgreementFile), ex.Message);
-                }
-            }
-        }
-
         if (!ModelState.IsValid)
         {
-            PopulateClientDropdown(vm.ClientId);
+            await PopulateClientDropdownAsync(vm.ClientId);
             return View(vm);
         }
 
-        // Verify the selected client actually exists
-        if (!await _context.Clients.AnyAsync(c => c.Id == vm.ClientId))
+        var clientResponse = await _client.GetAsync($"api/Clients/{vm.ClientId}");
+        if (!clientResponse.IsSuccessStatusCode)
         {
             ModelState.AddModelError(nameof(vm.ClientId), "The selected client does not exist.");
-            PopulateClientDropdown(vm.ClientId);
+            await PopulateClientDropdownAsync(vm.ClientId);
             return View(vm);
         }
 
@@ -141,49 +113,71 @@ public class ContractsController : Controller
             ServiceLevel = vm.ServiceLevel?.Trim()
         };
 
-        if (vm.AgreementFile != null)
+        var response = await _client.PostAsJsonAsync("api/Contracts", contract);
+        if (!response.IsSuccessStatusCode)
         {
-            try { contract.AgreementFilePath = await SaveFileAsync(vm.AgreementFile); }
-            catch (IOException)
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, !string.IsNullOrEmpty(errorMessage) ? errorMessage : "Unable to save the contract. Please try again.");
+            await PopulateClientDropdownAsync(vm.ClientId);
+            return View(vm);
+        }
+
+        var createdContract = await response.Content.ReadFromJsonAsync<Contract>();
+        if (createdContract == null)
+        {
+            ModelState.AddModelError(string.Empty, "Error deserializing contract from server.");
+            await PopulateClientDropdownAsync(vm.ClientId);
+            return View(vm);
+        }
+
+        if (vm.AgreementFile != null && vm.AgreementFile.Length > 0)
+        {
+            using (var content = new MultipartFormDataContent())
             {
-                ModelState.AddModelError(nameof(vm.AgreementFile), "Failed to save the file. Please try again.");
-                PopulateClientDropdown(vm.ClientId);
-                return View(vm);
+                using (var stream = vm.AgreementFile.OpenReadStream())
+                {
+                    var fileContent = new StreamContent(stream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(vm.AgreementFile.ContentType);
+                    content.Add(fileContent, "file", vm.AgreementFile.FileName);
+
+                    var uploadResponse = await _client.PostAsync($"api/Contracts/{createdContract.Id}/upload", content);
+                    if (!uploadResponse.IsSuccessStatusCode)
+                    {
+                        var uploadError = await uploadResponse.Content.ReadAsStringAsync();
+                        TempData["Error"] = $"Contract created, but file upload failed: {uploadError}";
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
         }
 
-        try
-        {
-            _context.Contracts.Add(contract);
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Contract created successfully.";
-            return RedirectToAction(nameof(Index));
-        }
-        catch (DbUpdateException)
-        {
-            ModelState.AddModelError(string.Empty, "Unable to save the contract. Please try again.");
-            PopulateClientDropdown(vm.ClientId);
-            return View(vm);
-        }
+        TempData["Success"] = "Contract created successfully.";
+        return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
-        var contract = await _context.Contracts.FindAsync(id);
-        if (contract == null) return NotFound();
-
-        PopulateClientDropdown(contract.ClientId);
-        return View(new ContractFormViewModel
+        
+        var response = await _client.GetAsync($"api/Contracts/{id}");
+        if (response.IsSuccessStatusCode)
         {
-            Id = contract.Id,
-            ClientId = contract.ClientId,
-            StartDate = contract.StartDate,
-            EndDate = contract.EndDate,
-            Status = contract.Status,
-            ServiceLevel = contract.ServiceLevel,
-            ExistingAgreementFilePath = contract.AgreementFilePath
-        });
+            var contract = await response.Content.ReadFromJsonAsync<Contract>();
+            if (contract == null) return NotFound();
+
+            await PopulateClientDropdownAsync(contract.ClientId);
+            return View(new ContractFormViewModel
+            {
+                Id = contract.Id,
+                ClientId = contract.ClientId,
+                StartDate = contract.StartDate,
+                EndDate = contract.EndDate,
+                Status = contract.Status,
+                ServiceLevel = contract.ServiceLevel,
+                ExistingAgreementFilePath = contract.AgreementFilePath
+            });
+        }
+        return NotFound();
     }
 
     [HttpPost]
@@ -192,141 +186,115 @@ public class ContractsController : Controller
     {
         if (id != vm.Id) return NotFound();
 
-        if (vm.AgreementFile != null)
+        if (!ModelState.IsValid)
         {
-            if (vm.AgreementFile.Length > MaxFileSizeBytes)
-                ModelState.AddModelError(nameof(vm.AgreementFile), "File must be 10 MB or smaller.");
-            else
+            await PopulateClientDropdownAsync(vm.ClientId);
+            return View(vm);
+        }
+
+        var clientResponse = await _client.GetAsync($"api/Clients/{vm.ClientId}");
+        if (!clientResponse.IsSuccessStatusCode)
+        {
+            ModelState.AddModelError(nameof(vm.ClientId), "The selected client does not exist.");
+            await PopulateClientDropdownAsync(vm.ClientId);
+            return View(vm);
+        }
+
+        var contract = new Contract
+        {
+            Id = vm.Id,
+            ClientId = vm.ClientId,
+            StartDate = vm.StartDate,
+            EndDate = vm.EndDate,
+            Status = vm.Status,
+            ServiceLevel = vm.ServiceLevel?.Trim(),
+            AgreementFilePath = vm.ExistingAgreementFilePath
+        };
+
+        var response = await _client.PutAsJsonAsync($"api/Contracts/{id}", contract);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, !string.IsNullOrEmpty(errorMessage) ? errorMessage : "Unable to update the contract. Please try again.");
+            await PopulateClientDropdownAsync(vm.ClientId);
+            return View(vm);
+        }
+
+        if (vm.AgreementFile != null && vm.AgreementFile.Length > 0)
+        {
+            using (var content = new MultipartFormDataContent())
             {
-                try { _fileValidation.IsValidPdf(vm.AgreementFile); }
-                catch (InvalidOperationException ex)
+                using (var stream = vm.AgreementFile.OpenReadStream())
                 {
-                    ModelState.AddModelError(nameof(vm.AgreementFile), ex.Message);
+                    var fileContent = new StreamContent(stream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(vm.AgreementFile.ContentType);
+                    content.Add(fileContent, "file", vm.AgreementFile.FileName);
+
+                    var uploadResponse = await _client.PostAsync($"api/Contracts/{id}/upload", content);
+                    if (!uploadResponse.IsSuccessStatusCode)
+                    {
+                        var uploadError = await uploadResponse.Content.ReadAsStringAsync();
+                        TempData["Error"] = $"Contract metadata updated, but file upload failed: {uploadError}";
+                        return RedirectToAction(nameof(Index));
+                    }
                 }
             }
         }
 
-        if (!ModelState.IsValid)
-        {
-            PopulateClientDropdown(vm.ClientId);
-            return View(vm);
-        }
-
-        var contract = await _context.Contracts.FindAsync(id);
-        if (contract == null) return NotFound();
-
-        contract.ClientId = vm.ClientId;
-        contract.StartDate = vm.StartDate;
-        contract.EndDate = vm.EndDate;
-        contract.Status = vm.Status;
-        contract.ServiceLevel = vm.ServiceLevel?.Trim();
-
-        if (vm.AgreementFile != null)
-        {
-            try { contract.AgreementFilePath = await SaveFileAsync(vm.AgreementFile); }
-            catch (IOException)
-            {
-                ModelState.AddModelError(nameof(vm.AgreementFile), "Failed to save the file. Please try again.");
-                PopulateClientDropdown(vm.ClientId);
-                return View(vm);
-            }
-        }
-
-        try
-        {
-            _context.Update(contract);
-            await _context.SaveChangesAsync();
-            TempData["Success"] = $"Contract #{id} updated successfully.";
-            return RedirectToAction(nameof(Index));
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await _context.Contracts.AnyAsync(c => c.Id == id)) return NotFound();
-            ModelState.AddModelError(string.Empty, "This record was modified by another user. Please reload and try again.");
-            PopulateClientDropdown(vm.ClientId);
-            return View(vm);
-        }
-        catch (DbUpdateException)
-        {
-            ModelState.AddModelError(string.Empty, "Unable to save changes. Please try again.");
-            PopulateClientDropdown(vm.ClientId);
-            return View(vm);
-        }
+        TempData["Success"] = $"Contract #{id} updated successfully.";
+        return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
-        var contract = await _context.Contracts
-            .Include(c => c.Client)
-            .FirstOrDefaultAsync(c => c.Id == id);
-        if (contract == null) return NotFound();
-        return View(contract);
+        
+        var response = await _client.GetAsync($"api/Contracts/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            var contract = await response.Content.ReadFromJsonAsync<Contract>();
+            if (contract == null) return NotFound();
+            return View(contract);
+        }
+        return NotFound();
     }
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var contract = await _context.Contracts.FindAsync(id);
-        if (contract == null) return NotFound();
-
-        try
+        var response = await _client.DeleteAsync($"api/Contracts/{id}");
+        if (response.IsSuccessStatusCode)
         {
-            _context.Contracts.Remove(contract);
-            await _context.SaveChangesAsync();
             TempData["Success"] = $"Contract #{id} was deleted.";
         }
-        catch (DbUpdateException)
+        else
         {
-            TempData["Error"] = "Unable to delete this contract. Please try again.";
+            TempData["Error"] = "Unable to delete the contract. Please try again.";
         }
-
         return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> ViewAgreement(int id)
     {
-        var contract = await _context.Contracts.FindAsync(id);
-        if (contract == null || string.IsNullOrEmpty(contract.AgreementFilePath))
-            return NotFound();
+        var response = await _client.GetAsync($"api/Contracts/{id}/download");
+        if (!response.IsSuccessStatusCode)
+        {
+            return NotFound("The agreement file could not be found or retrieved from the server.");
+        }
 
-        var physicalPath = Path.Combine(_env.WebRootPath, contract.AgreementFilePath.TrimStart('/'));
-        if (!System.IO.File.Exists(physicalPath))
-            return NotFound("The agreement file could not be found on the server.");
-
-        return PhysicalFile(physicalPath, "application/pdf");
+        var fileBytes = await response.Content.ReadAsByteArrayAsync();
+        return File(fileBytes, "application/pdf");
     }
 
-    // Code attribution
-    // Microsoft. 2023. Saving Files in ASP.NET Core / IFormFile.
-    // Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads
-    // [Accessed: 15 January 2025]
-    //
-    // Code attribution
-    // Stack Overflow. 2016. Generate a GUID/UUID file name for uploaded files in ASP.NET.
-    // Available at: https://stackoverflow.com/questions/2138012/generating-a-unique-file-name-using-a-guid
-    // [Accessed: 15 January 2025]
-    private async Task<string> SaveFileAsync(IFormFile file)
+    private async Task PopulateClientDropdownAsync(int? selectedId = null)
     {
-        var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "contracts");
-        Directory.CreateDirectory(uploadsFolder);
-
-        // GUID naming prevents overwriting: contract_<guid>.pdf
-        var guid = Guid.NewGuid().ToString("N");
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var uniqueName = $"contract_{guid}{extension}";
-
-        var filePath = Path.Combine(uploadsFolder, uniqueName);
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
-        return $"/uploads/contracts/{uniqueName}";
-    }
-
-    private void PopulateClientDropdown(int? selectedId = null)
-    {
-        ViewBag.Clients = new SelectList(
-            _context.Clients.OrderBy(c => c.Name),
-            "Id", "Name", selectedId);
+        var response = await _client.GetAsync("api/Clients");
+        var clients = new List<Client>();
+        if (response.IsSuccessStatusCode)
+        {
+            clients = await response.Content.ReadFromJsonAsync<List<Client>>() ?? new List<Client>();
+        }
+        ViewBag.Clients = new SelectList(clients.OrderBy(c => c.Name), "Id", "Name", selectedId);
     }
 }
